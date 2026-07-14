@@ -349,7 +349,7 @@ class CallViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun applyRemoteVolume() {
-        val volume = if (languageSettings.hearOriginalAlongsideTranslation) 0.35f else 0.05f
+        val volume = if (languageSettings.hearOriginalAlongsideTranslation) 0.35 else 0.05
         remoteAudioTrack?.setVolume(volume)
     }
 
