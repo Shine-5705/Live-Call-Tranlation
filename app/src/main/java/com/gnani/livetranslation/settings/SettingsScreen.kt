@@ -27,9 +27,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.gnani.livetranslation.BuildConfig
+import com.gnani.livetranslation.data.BackendConfig
 import com.gnani.livetranslation.data.SupportedLanguages
 import com.gnani.livetranslation.data.UserLanguageSettings
+import com.gnani.livetranslation.util.DeviceUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,9 +82,20 @@ fun SettingsScreen(
             value = serverHost,
             onValueChange = { serverHost = it },
             label = { Text("Backend server (host:port)") },
-            placeholder = { Text(BuildConfig.BACKEND_HOST) },
+            placeholder = {
+                Text(
+                    if (DeviceUtils.isEmulator()) DeviceUtils.EMULATOR_BACKEND_HOST
+                    else BackendConfig.resolveDefaultHost().ifBlank { "192.168.1.3:3000" }
+                )
+            },
             supportingText = {
-                Text("Dev: use ngrok HTTPS URL in backend PUBLIC_BASE_URL for Twilio webhooks")
+                Text(
+                    if (DeviceUtils.isEmulator()) {
+                        "Emulator: use 10.0.2.2:3000 (your Mac's localhost)"
+                    } else {
+                        "Physical phone: use your Mac's Wi-Fi IP, e.g. 192.168.1.3:3000 — not 10.0.2.2"
+                    }
+                )
             },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
@@ -123,11 +135,22 @@ fun SettingsScreen(
                     validationError = "Your language and their language must differ"
                     return@Button
                 }
+                val host = BackendConfig.normalizeHost(serverHost).ifBlank {
+                    BackendConfig.resolveDefaultHost()
+                }
+                if (!BackendConfig.isConfigured(host)) {
+                    validationError = "Backend server is required (e.g. 192.168.1.3:3000)"
+                    return@Button
+                }
+                if (!DeviceUtils.isEmulator() && host == DeviceUtils.EMULATOR_BACKEND_HOST) {
+                    validationError = "10.0.2.2 only works on emulator. Use your Mac's IP."
+                    return@Button
+                }
                 validationError = null
                 onSave(
                     UserLanguageSettings(sourceLang, targetLang, remoteLang, false),
                     name,
-                    serverHost
+                    host
                 )
             },
             modifier = Modifier.fillMaxWidth()

@@ -4,6 +4,17 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+// Set backend.host in local.properties for physical device testing (see local.properties.example)
+val backendHostFromLocal = localProperties.getProperty("backend.host", "").trim()
+
 android {
     namespace = "com.gnani.livetranslation"
     compileSdk = 35
@@ -15,8 +26,8 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        buildConfigField("String", "BACKEND_HOST", "\"10.0.2.2:3000\"")
-        // Physical device: set in Settings screen to your PC's LAN IP, e.g. 192.168.1.42:3000
+        // Emulator uses 10.0.2.2 at runtime; physical devices use backend.host from local.properties
+        buildConfigField("String", "BACKEND_HOST", "\"$backendHostFromLocal\"")
     }
 
     buildTypes {

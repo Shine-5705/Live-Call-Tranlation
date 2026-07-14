@@ -9,12 +9,13 @@ import com.gnani.livetranslation.captions.CaptionStateHolder
 import com.gnani.livetranslation.data.BackendConfig
 import com.gnani.livetranslation.data.CaptionDirection
 import com.gnani.livetranslation.data.CaptionEntry
+import com.gnani.livetranslation.data.BackendConfig
 import com.gnani.livetranslation.data.SupportedLanguages
 import com.gnani.livetranslation.data.UserLanguageSettings
 import com.gnani.livetranslation.service.TranslationForegroundService
 import com.gnani.livetranslation.settings.SettingsRepository
 import com.gnani.livetranslation.twilio.TwilioCallManager
-import com.gnani.livetranslation.twilio.TwilioCallState
+import com.gnani.livetranslation.util.DeviceUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -112,6 +113,18 @@ class DialViewModel(application: Application) : AndroidViewModel(application) {
         val number = _uiState.value.phoneNumber.trim()
         if (number.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Phone number is required") }
+            return
+        }
+        if (!BackendConfig.isConfigured(backendHost)) {
+            _uiState.update {
+                it.copy(errorMessage = "Set backend server in Settings (e.g. 192.168.1.3:3000)")
+            }
+            return
+        }
+        if (!DeviceUtils.isEmulator() && backendHost == DeviceUtils.EMULATOR_BACKEND_HOST) {
+            _uiState.update {
+                it.copy(errorMessage = "10.0.2.2 only works on emulator. Use your Mac's IP in Settings.")
+            }
             return
         }
 

@@ -3,7 +3,6 @@ package com.gnani.livetranslation.settings
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.gnani.livetranslation.BuildConfig
 import com.gnani.livetranslation.data.BackendConfig
 import com.gnani.livetranslation.data.UserLanguageSettings
 
@@ -38,9 +37,7 @@ class SettingsRepository(context: Context) {
     }
 
     fun getBackendHost(): String =
-        BackendConfig.normalizeHost(
-            prefs.getString(KEY_BACKEND_HOST, BuildConfig.BACKEND_HOST)
-        )
+        BackendConfig.effectiveHost(prefs.getString(KEY_BACKEND_HOST, null))
 
     fun saveBackendHost(host: String) {
         prefs.edit()
