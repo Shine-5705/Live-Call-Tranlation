@@ -1,4 +1,30 @@
 # Logs
+# Gradle
+.gradle/
+build/
+**/build/
+eng-japanese_tranlator_desktop
+# Android
+*.iml
+.idea/
+local.properties
+*.apk
+*.aab
+.cxx/
+
+# Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+
+# OS
+.DS_Store
+*.log
+
+# Secrets — never commit
+.env
+*.keystore
+
 logs
 *.log
 npm-debug.log*
@@ -141,3 +167,4 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Live Call Translator</string>
+    <string name="notification_channel_name">Active Call Translation</string>
+    <string name="notification_channel_desc">Shows when a call translation session is active</string>
+    <string name="notification_title">Translation active</string>
+    <string name="notification_text">Tap to view live captions</string>
+    <string name="monitor_channel_name">Phone Call Alerts</string>
+    <string name="monitor_channel_desc">Notifies when a phone call is detected</string>
+    <string name="call_detected_title">Phone call detected</string>
+    <string name="call_detected_text">Tap to start live translation</string>
+</resources>
