@@ -90,6 +90,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onNavigateToInAppCall = {
                                     navController.navigate("call")
+                                },
+                                onTestConnection = { host ->
+                                    settingsRepository.checkConnection(host)
                                 }
                             )
                         }

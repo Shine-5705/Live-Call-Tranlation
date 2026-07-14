@@ -9,12 +9,12 @@ import com.gnani.livetranslation.captions.CaptionStateHolder
 import com.gnani.livetranslation.data.BackendConfig
 import com.gnani.livetranslation.data.CaptionDirection
 import com.gnani.livetranslation.data.CaptionEntry
-import com.gnani.livetranslation.data.BackendConfig
 import com.gnani.livetranslation.data.SupportedLanguages
 import com.gnani.livetranslation.data.UserLanguageSettings
 import com.gnani.livetranslation.service.TranslationForegroundService
 import com.gnani.livetranslation.settings.SettingsRepository
 import com.gnani.livetranslation.twilio.TwilioCallManager
+import com.gnani.livetranslation.twilio.TwilioCallState
 import com.gnani.livetranslation.util.DeviceUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -110,7 +110,10 @@ class DialViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startCall() {
+        refreshSettings()
         val number = _uiState.value.phoneNumber.trim()
+        Log.d(TAG, "startCall: host=$backendHost, number=$number")
+        
         if (number.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Phone number is required") }
             return
@@ -140,6 +143,7 @@ class DialViewModel(application: Application) : AndroidViewModel(application) {
 
         viewModelScope.launch {
             try {
+                Log.i(TAG, "Attempting to connect to: ${BackendConfig.httpBaseUrl(backendHost)}")
                 val jwt = fetchAuthToken()
                 authToken = jwt
                 val session = startCallSession(jwt, e164)
@@ -150,11 +154,17 @@ class DialViewModel(application: Application) : AndroidViewModel(application) {
                     it.copy(sessionId = session.sessionId, statusMessage = "Ringing…")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Call failed", e)
+                Log.e(TAG, "Call failed to host $backendHost", e)
+                val userFriendlyMessage = when {
+                    e is java.net.ConnectException || e.message?.contains("timeout", ignoreCase = true) == true -> {
+                        "Failed to connect to $backendHost. \n\n1. Check if backend is running.\n2. Verify Wi-Fi (phone & PC on same network).\n3. Disable Firewall on PC."
+                    }
+                    else -> e.message ?: "Call failed"
+                }
                 _uiState.update {
                     it.copy(
                         callState = DialCallState.ERROR,
-                        errorMessage = e.message ?: "Call failed"
+                        errorMessage = userFriendlyMessage
                     )
                 }
             }

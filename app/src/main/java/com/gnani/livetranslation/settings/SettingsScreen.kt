@@ -31,6 +31,7 @@ import com.gnani.livetranslation.data.BackendConfig
 import com.gnani.livetranslation.data.SupportedLanguages
 import com.gnani.livetranslation.data.UserLanguageSettings
 import com.gnani.livetranslation.util.DeviceUtils
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,8 @@ fun SettingsScreen(
     backendHost: String,
     onSave: (UserLanguageSettings, String, String) -> Unit,
     onNavigateToDial: () -> Unit,
-    onNavigateToInAppCall: () -> Unit
+    onNavigateToInAppCall: () -> Unit,
+    onTestConnection: suspend (String) -> Result<Unit>
 ) {
     var sourceLang by remember(settings) { mutableStateOf(settings.sourceLanguage) }
     var targetLang by remember(settings) { mutableStateOf(settings.targetLanguage) }
@@ -48,6 +50,9 @@ fun SettingsScreen(
     var name by remember(displayName) { mutableStateOf(displayName) }
     var serverHost by remember(backendHost) { mutableStateOf(backendHost) }
     var validationError by remember { mutableStateOf<String?>(null) }
+    var connectionStatus by remember { mutableStateOf<String?>(null) }
+    var isTestingConnection by remember { mutableStateOf(false) }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -100,6 +105,37 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        OutlinedButton(
+            onClick = {
+                scope.launch {
+                    isTestingConnection = true
+                    connectionStatus = "Testing connection..."
+                    val result = onTestConnection(serverHost)
+                    connectionStatus = if (result.isSuccess) {
+                        "✅ Connection successful!"
+                    } else {
+                        "❌ Failed: ${result.exceptionOrNull()?.message}"
+                    }
+                    isTestingConnection = false
+                }
+            },
+            enabled = !isTestingConnection && serverHost.isNotBlank(),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (isTestingConnection) "Connecting..." else "Test Connection")
+        }
+        
+        connectionStatus?.let { status ->
+            Text(
+                text = status,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (status.startsWith("✅")) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+        
         Spacer(modifier = Modifier.height(16.dp))
 
         LanguageDropdown(
