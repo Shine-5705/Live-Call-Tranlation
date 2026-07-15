@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.gnani.livetranslation.data.BackendConfig
+import com.gnani.livetranslation.data.BackendConnectionTester
 import com.gnani.livetranslation.data.UserLanguageSettings
 
 class SettingsRepository(context: Context) {
@@ -45,23 +46,8 @@ class SettingsRepository(context: Context) {
             .apply()
     }
 
-    suspend fun checkConnection(host: String): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-        try {
-            val client = okhttp3.OkHttpClient.Builder()
-                .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
-                .readTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
-                .build()
-            
-            val url = BackendConfig.httpBaseUrl(host)
-            val request = okhttp3.Request.Builder().url(url).build()
-            
-            client.newCall(request).execute().use { response ->
-                // Even a 404 or 401 means the server is REACHABLE
-                Result.success(Unit)
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    suspend fun checkConnection(host: String): Result<Unit> {
+        return BackendConnectionTester.test(host).map { }
     }
 
     fun hasAcceptedConsent(): Boolean = prefs.getBoolean(KEY_CONSENT_ACCEPTED, false)

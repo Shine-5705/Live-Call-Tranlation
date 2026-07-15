@@ -3,4 +3,4 @@
 
 ## Backend host for physical device testing (your Mac's LAN IP + port)
 ## Find IP: ipconfig getifaddr en0
-backend.host=192.168.1.3:3000
+backend.host=192.168.1.2:3000

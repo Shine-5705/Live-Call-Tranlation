@@ -90,7 +90,7 @@ fun SettingsScreen(
             placeholder = {
                 Text(
                     if (DeviceUtils.isEmulator()) DeviceUtils.EMULATOR_BACKEND_HOST
-                    else BackendConfig.resolveDefaultHost().ifBlank { "192.168.1.3:3000" }
+                    else BackendConfig.resolveDefaultHost().ifBlank { "192.168.1.2:3000" }
                 )
             },
             supportingText = {
@@ -98,7 +98,7 @@ fun SettingsScreen(
                     if (DeviceUtils.isEmulator()) {
                         "Emulator: use 10.0.2.2:3000 (your Mac's localhost)"
                     } else {
-                        "Physical phone: use your Mac's Wi-Fi IP, e.g. 192.168.1.3:3000 — not 10.0.2.2"
+                        "Physical phone: Mac IP + :3000 (run ipconfig getifaddr en0 on Mac). IP can change on Wi-Fi."
                     }
                 )
             },
@@ -175,7 +175,7 @@ fun SettingsScreen(
                     BackendConfig.resolveDefaultHost()
                 }
                 if (!BackendConfig.isConfigured(host)) {
-                    validationError = "Backend server is required (e.g. 192.168.1.3:3000)"
+                    validationError = "Backend server is required (e.g. 192.168.1.2:3000)"
                     return@Button
                 }
                 if (!DeviceUtils.isEmulator() && host == DeviceUtils.EMULATOR_BACKEND_HOST) {

@@ -120,7 +120,7 @@ class DialViewModel(application: Application) : AndroidViewModel(application) {
         }
         if (!BackendConfig.isConfigured(backendHost)) {
             _uiState.update {
-                it.copy(errorMessage = "Set backend server in Settings (e.g. 192.168.1.3:3000)")
+                it.copy(errorMessage = "Set backend server in Settings (e.g. 192.168.1.2:3000)")
             }
             return
         }
@@ -157,7 +157,11 @@ class DialViewModel(application: Application) : AndroidViewModel(application) {
                 Log.e(TAG, "Call failed to host $backendHost", e)
                 val userFriendlyMessage = when {
                     e is java.net.ConnectException || e.message?.contains("timeout", ignoreCase = true) == true -> {
-                        "Failed to connect to $backendHost. \n\n1. Check if backend is running.\n2. Verify Wi-Fi (phone & PC on same network).\n3. Disable Firewall on PC."
+                        "Failed to connect to $backendHost.\n\n" +
+                            "1. Your Mac IP may have changed — open Settings → Test Connection.\n" +
+                            "2. On Mac run: ipconfig getifaddr en0 (use that IP:3000).\n" +
+                            "3. Test in phone browser: http://$backendHost/health\n" +
+                            "4. Backend must be running (npm run dev in backend/)."
                     }
                     else -> e.message ?: "Call failed"
                 }

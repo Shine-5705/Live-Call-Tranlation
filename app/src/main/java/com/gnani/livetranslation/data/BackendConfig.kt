@@ -30,6 +30,15 @@ object BackendConfig {
             if (!DeviceUtils.isEmulator() && normalized == DeviceUtils.EMULATOR_BACKEND_HOST) {
                 return resolveDefaultHost()
             }
+            // Prefer build-time host when saved value looks like a stale LAN IP on same subnet
+            val buildDefault = resolveDefaultHost()
+            if (!DeviceUtils.isEmulator() && buildDefault.isNotBlank() && normalized != buildDefault) {
+                val savedIp = normalized.substringBefore(':')
+                val buildIp = buildDefault.substringBefore(':')
+                if (savedIp.startsWith("192.168.") && buildIp.startsWith("192.168.") && savedIp != buildIp) {
+                    return buildDefault
+                }
+            }
             return normalized
         }
         return resolveDefaultHost()
